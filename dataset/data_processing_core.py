@@ -135,6 +135,32 @@ def GazeTo2d(gaze):
     pitch = np.arcsin(-gaze[1])
     return np.array([yaw, pitch])
 
+def GazeTo2d_2(gaze):
+    yaw = np.arctan2(-gaze[1], -gaze[0])
+    pitch = np.arccos(-gaze[2])
+
+    return np.array([yaw, pitch])
+
+def GazeTrans(gaze, mode):
+    assert mode in ['ab_to_ft', 'ft_to_ab'], f"The mode should be either (alpht & belta) or (phi&theta)"
+    if mode == 'ab_to_ft':
+        ta = np.tan(gaze[0])
+        tb = np.tan(gaze[1])
+        yaw = np.arctan2(tb, ta)
+        pitch = np.arctan(np.sqrt(tb*tb+ta*ta))
+        return np.array([yaw, pitch])
+    elif mode == 'ft_to_ab':
+        cf = np.cos(gaze[0])
+        sf = np.sin(gaze[0])
+        tt = np.tan(gaze[1])
+        yaw = np.arctan(cf*tt)
+        pitch = np.arctan(sf*tt)
+        return np.array([yaw, pitch])
+
+
+
+
+
 def GazeTo3d(gaze):
     x = -np.cos(gaze[1]) * np.sin(gaze[0])
     y = -np.sin(gaze[1])
@@ -144,7 +170,8 @@ def GazeTo3d(gaze):
 def HeadTo2d(head):
     assert np.array(head).shape == (3,), f"The shape of headrotmatrix must be (3,), which is {np.array(head).shape} currently"
     M = cv2.Rodrigues(head)[0]
-    print(M, end="-----")
+    print('M', M)
+    print('===')
     vec = M[:, 2]
     pitch = np.arcsin(vec[1])
     yaw = np.arctan2(vec[0], vec[2])
@@ -204,5 +231,3 @@ def Euler2RotMat(theta, format='degree'):
                     ])
     R = np.dot(R_z, np.dot(R_y, R_x))
     return R
-
-
